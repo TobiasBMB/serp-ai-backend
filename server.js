@@ -1,5 +1,6 @@
-"console.log('SERP AI Backend');" 
 require("dotenv").config();
+console.log("🚀 SERP AI Backend is Starting...");
+
 const express = require("express");
 const cors = require("cors");
 const { google } = require("googleapis");
@@ -11,52 +12,56 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve static files (including Google verification)
+// ✅ Serve static files (for Google site verification)
 app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Serve Google verification file directly
+// ✅ Serve Google verification file
 app.get("/google7f01d29d82127287.html", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "google7f01d29d82127287.html"));
 });
 
-// Root Route
+// ✅ Root Route
 app.get("/", (req, res) => {
     res.send("🚀 SERP AI Backend is Running!");
 });
 
-// Google Search Console API Route
+// ✅ Google Search Console API Route
 app.get("/api/gsc", async (req, res) => {
     try {
+        // 🔹 Initialize OAuth2 client
         const auth = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET
+            process.env.GOOGLE_CLIENT_SECRET,
+            "https://developers.google.com/oauthplayground" // Ensure this matches your refresh token origin
         );
+
         auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 
+        // 🔹 Connect to Google Search Console API
         const searchConsole = google.searchconsole({ version: "v1", auth });
 
+        // 🔹 Query Search Console for top 10 queries
         const response = await searchConsole.searchanalytics.query({
-    siteUrl: "https://serp-ai-app.vercel.app", // Updated
-    requestBody: {
-        startDate: "2024-01-01",
-        endDate: "2024-02-01",
-        dimensions: ["query"],
-        rowLimit: 10
-    }
-});
-
+            siteUrl: "https://serp-ai-app.vercel.app",
+            requestBody: {
+                startDate: "2024-01-01",
+                endDate: "2024-02-01",
+                dimensions: ["query"],
+                rowLimit: 10
+            }
+        });
 
         res.json(response.data);
     } catch (error) {
-        console.error("Google API Error:", error.message);
+        console.error("❌ Google API Error:", error.message);
         res.status(500).json({ error: error.message });
     }
 });
 
-// ✅ Corrected for Vercel: Export Express App
+// ✅ Export Express App for Vercel Deployment
 module.exports = app;
 
-// ✅ Ensure the server runs locally
+// ✅ Run the Server Locally
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
