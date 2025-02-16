@@ -36,14 +36,15 @@ app.get("/api/gsc", async (req, res) => {
         const searchConsole = google.searchconsole({ version: "v1", auth });
 
         const response = await searchConsole.searchanalytics.query({
-            siteUrl: "https://justb.au", // Make sure this is your verified domain
-            requestBody: {
-                startDate: "2024-01-01",
-                endDate: "2024-02-01",
-                dimensions: ["query"],
-                rowLimit: 10
-            }
-        });
+    siteUrl: "https://serp-ai-app.vercel.app", // Updated
+    requestBody: {
+        startDate: "2024-01-01",
+        endDate: "2024-02-01",
+        dimensions: ["query"],
+        rowLimit: 10
+    }
+});
+
 
         res.json(response.data);
     } catch (error) {
