@@ -28,21 +28,23 @@ app.get("/", (req, res) => {
 // ✅ Google Search Console API Route
 app.get("/api/gsc", async (req, res) => {
     try {
-        // 🔹 Initialize OAuth2 client
+        const siteUrl = req.query.siteUrl;
+        console.log(`🔍 Fetching GSC Data for: ${siteUrl}`); // ✅ Log site URL
+
+        // Initialize OAuth2 client
         const auth = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID,
             process.env.GOOGLE_CLIENT_SECRET,
-            "https://developers.google.com/oauthplayground" // Ensure this matches your refresh token origin
+            "https://developers.google.com/oauthplayground"
         );
-
         auth.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
 
-        // 🔹 Connect to Google Search Console API
+        // Connect to Google Search Console API
         const searchConsole = google.searchconsole({ version: "v1", auth });
 
         // 🔹 Query Search Console for top 10 queries
         const response = await searchConsole.searchanalytics.query({
-            siteUrl: "https://serp-ai-app.vercel.app",
+            siteUrl: siteUrl,
             requestBody: {
                 startDate: "2024-01-01",
                 endDate: "2024-02-01",
@@ -51,12 +53,17 @@ app.get("/api/gsc", async (req, res) => {
             }
         });
 
+        console.log("🔹 GSC API Raw Response:", response); // ✅ Log full API response
+        console.log("🔹 GSC API Data:", JSON.stringify(response.data, null, 2)); // ✅ Log formatted data
+
         res.json(response.data);
+
     } catch (error) {
         console.error("❌ Google API Error:", error.message);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 // ✅ Export Express App for Vercel Deployment
 module.exports = app;
